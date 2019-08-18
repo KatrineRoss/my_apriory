@@ -30,6 +30,9 @@ namespace MyApriory
                 allFrequentItems.ConcatItems(frequentItems);
             } while (candidates.Count != 0);
 
+            HashSet<Rule> rules = GenerateRules(allFrequentItems);
+            IList<Rule> strongRules = GetStrongRules(minConfidence, rules, allFrequentItems);
+
             return new Output
             {
 
@@ -200,6 +203,134 @@ namespace MyApriory
             }
 
             return frequentItems;
+        }
+
+        /// <summary>
+        /// Генерация ассоциативных правил.
+        /// </summary>
+        /// <param name="allFrequentItems">Все наиболее встречающиеся элементы.</param>
+        /// <returns></returns>
+        private HashSet<Rule> GenerateRules(ItemsDictionary allFrequentItems)
+        {
+            var rulesList = new HashSet<Rule>();
+
+            foreach (var item in allFrequentItems)
+            {
+                if (item.ProductSet.Length > 1)
+                {
+                    IEnumerable<string[]> subsetsList = GenerateSubsets(item.ProductSet);
+
+                    foreach (var subset in subsetsList)
+                    {
+                        string[] remaining = GetRemaining(subset, item.ProductSet);
+                        Rule rule = new Rule(subset, remaining, 0);
+
+                        if (!rulesList.Contains(rule))
+                        {
+                            rulesList.Add(rule);
+                        }
+                    }
+                }
+            }
+
+            return rulesList;
+        }
+
+        /// <summary>
+        /// Генерация подмножеств (L/2).
+        /// </summary>
+        /// <param name="item">Элемент(множество).</param>
+        /// <returns></returns>
+        private IEnumerable<string[]> GenerateSubsets(string[] item)
+        {
+            IEnumerable<string[]> allSubsets = new string[][] { };
+            int subsetLength = item.Length / 2;
+
+            for (int i = 1; i <= subsetLength; i++)
+            {
+                IList<string[]> subsets = new List<string[]>();
+                GenerateSubsetsRecursive(item, i, new string[item.Length], subsets);
+                allSubsets = allSubsets.Concat(subsets);
+            }
+
+            return allSubsets;
+        }
+
+        /// <summary>
+        /// Рекурсивная генерация подмножеств.
+        /// </summary>
+        /// <param name="item">Элемент(множество).</param>
+        /// <param name="subsetLength">Длина подмножества.</param>
+        /// <param name="temp">Временная переменная для результирующего подмножества.</param>
+        /// <param name="subsets">Подмножество.</param>
+        /// <param name="q">Индекс, указывающий конец отрезка для копирования.</param>
+        /// <param name="r">Temp-индекс для копирования в подмножество.</param>
+        private void GenerateSubsetsRecursive(string[] item, int subsetLength, string[] temp, IList<string[]> subsets, int q = 0, int r = 0)
+        {
+            if (q == subsetLength)
+            {
+                List<string> sb = new List<string>();
+
+                for (int i = 0; i < subsetLength; i++)
+                {
+                    sb.Add(temp[i]);
+                }
+
+                subsets.Add(sb.ToArray());
+            }
+
+            else
+            {
+                for (int i = r; i < item.Length; i++)
+                {
+                    temp[q] = item[i];
+                    GenerateSubsetsRecursive(item, subsetLength, temp, subsets, q + 1, i + 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получение правой части правила (остатка).
+        /// </summary>
+        /// <param name="child">Левая часть правила.</param>
+        /// <param name="parent">Набор из которого составляем правило.</param>
+        /// <returns></returns>
+        private string[] GetRemaining(string[] child, string[] parent)
+        {
+            List<string> result = new List<string>(parent);
+
+            for (int i = 0; i < child.Length; i++)
+            {
+                result.Remove(child[i]);
+            }
+
+            parent = result.ToArray();
+
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// Получение ассоциативных правил, удовлетворяющих условие минимальной достоверности.
+        /// </summary>
+        /// <param name="minConfidence">Минимальная достоверность.</param>
+        /// <param name="rules">Хэш с правилами.</param>
+        /// <param name="allFrequentItems">Все частовстречающиеся элементы.</param>
+        /// <returns></returns>
+        private IList<Rule> GetStrongRules(double minConfidence, HashSet<Rule> rules, ItemsDictionary allFrequentItems)
+        {
+            var strongRules = new List<Rule>();
+
+            foreach (Rule rule in rules)
+            {
+                string[] xy = new string[rule.X.Length + rule.Y.Length];
+
+                xy = rule.X.Concat(rule.Y).ToArray();
+
+                //AddStrongRule(rule, xy, strongRules, minConfidence, allFrequentItems);
+            }
+
+            strongRules.Sort();
+            return strongRules;
         }
     }
 }

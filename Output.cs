@@ -27,8 +27,6 @@ namespace MyApriory
         public ItemsDictionary FrequentItems { get; set; }
     }
 
-    class Rule { }
-
     public class ItemsDictionary : KeyedCollection<string, Item>
     {
         protected override string GetKeyForItem(Item item)
