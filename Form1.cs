@@ -39,27 +39,19 @@ namespace MyApriory
             // читаем файл в строку
             string fileText = System.IO.File.ReadAllText(filename);
 
-            try
-            {
-                ExcelApp = new Microsoft.Office.Interop.Excel.Application();
-                ObjWorkBook = ExcelApp.Workbooks.Open(filename, 0, false, 5, "", "", false, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "", true, false, 0, true, false, false);
-                ObjWorkSheet = (Microsoft.Office.Interop.Excel.Worksheet)ObjWorkBook.Sheets[1];
-                fileText = ObjWorkSheet.Cells[1, 2].Text.ToString();
+            ExcelApp = new Microsoft.Office.Interop.Excel.Application();
+            ObjWorkBook = ExcelApp.Workbooks.Open(filename, 0, false, 5, "", "", false, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "", true, false, 0, true, false, false);
+            ObjWorkSheet = (Microsoft.Office.Interop.Excel.Worksheet)ObjWorkBook.Sheets[1];
+            fileText = ObjWorkSheet.Cells[1, 2].Text.ToString();
 
-                ExelParser exel = new ExelParser(ObjWorkSheet);
-                Apriory a = new Apriory();
+            ExelParser exel = new ExelParser(ObjWorkSheet);
+            Apriory a = new Apriory();
 
-                exel.parse();
+            exel.parse();
 
-                a.processTransaction(0.5, 0.3, ExelParser.itemsArray, ExelParser.apriorySets);
-                richTextBox1.Text = exel.getTransactionsForPrint();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                ExcelApp.Quit();
-                return;
-            }
+            a.processTransaction(0.5, 0.3, ExelParser.itemsArray, ExelParser.apriorySets);
+            richTextBox1.Text = exel.getTransactionsForPrint();
+           
             System.Windows.Forms.Application.DoEvents();
 
             ExcelApp.Quit();

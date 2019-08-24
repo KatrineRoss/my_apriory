@@ -326,11 +326,72 @@ namespace MyApriory
 
                 xy = rule.X.Concat(rule.Y).ToArray();
 
-                //AddStrongRule(rule, xy, strongRules, minConfidence, allFrequentItems);
+                AddStrongRule(rule, xy, strongRules, minConfidence, allFrequentItems);
             }
 
-            strongRules.Sort();
+            //strongRules.Sort();
             return strongRules;
+        }
+
+        /// <summary>
+        /// Добавление нового правила, удовлетворяющего условию минимальной достоверности.
+        /// </summary>
+        /// <param name="rule">Правило.</param>
+        /// <param name="XY">Правая часть правила (результирующий набор)</param>
+        /// <param name="strongRules">Список правил, удовлетворяющих минимальной достоверности.</param>
+        /// <param name="minConfidence">Минимальная достоверность.</param>
+        /// <param name="allFrequentItems">Все частовстречающиеся элементы.</param>
+        private void AddStrongRule(Rule rule, string[] XY, List<Rule> strongRules, double minConfidence, ItemsDictionary allFrequentItems)
+        {
+            double confidence = GetConfidence(rule.X, XY, allFrequentItems);
+
+            if (confidence >= minConfidence)
+            {
+                Rule newRule = new Rule(rule.X, rule.Y, confidence);
+                strongRules.Add(newRule);
+            }
+
+            confidence = GetConfidence(rule.Y, XY, allFrequentItems);
+
+            if (confidence >= minConfidence)
+            {
+                Rule newRule = new Rule(rule.Y, rule.X, confidence);
+                strongRules.Add(newRule);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает достоверность правила.
+        /// </summary>
+        /// <param name="X">Элевент из левой части правила.</param>
+        /// <param name="XY">Комбинация Х с элементов из правой части правила.</param>
+        /// <param name="allFrequentItems"></param>
+        /// <returns></returns>
+        private double GetConfidence(string[] X, string[] XY, ItemsDictionary allFrequentItems)
+        {
+            double supportX = FindItemByProducts(X, allFrequentItems).Support;
+            double supportXY = FindItemByProducts(XY, allFrequentItems).Support;
+            return supportXY / supportX;
+        }
+
+        /// <summary>
+        /// Находит набор элементов транзакции по списку элементов.
+        /// </summary>
+        /// <param name="products">Набор.</param>
+        /// <param name="items">Список элементов, среди которых ищем.</param>
+        /// <returns></returns>
+        private Item FindItemByProducts(string[] products, ItemsDictionary items) {
+            string[] itemProducts = new string[products.Length];
+            double support = 0;
+
+            foreach (Item item in items) {
+                if (products.SequenceEqual(item.ProductSet)) {
+                    Array.Copy(item.ProductSet, itemProducts, itemProducts.Length);
+                    support = item.Support;
+                }
+            }
+
+            return new Item { Support = support, ProductSet = itemProducts };
         }
     }
 }
