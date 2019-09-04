@@ -31,34 +31,48 @@ namespace MyApriory
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            /*if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
-                return;*/
+            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
 
             // получаем выбранный файл
-            string filename = "C:\\prjs\\sharp\\tranzactions.xlsx";//openFileDialog1.FileName;
-            // читаем файл в строку
-            string fileText = System.IO.File.ReadAllText(filename);
+            string filename = openFileDialog1.FileName; //"C:\\prjs\\sharp\\tranzactions.xlsx";
 
             ExcelApp = new Microsoft.Office.Interop.Excel.Application();
             ObjWorkBook = ExcelApp.Workbooks.Open(filename, 0, false, 5, "", "", false, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "", true, false, 0, true, false, false);
             ObjWorkSheet = (Microsoft.Office.Interop.Excel.Worksheet)ObjWorkBook.Sheets[1];
-            fileText = ObjWorkSheet.Cells[1, 2].Text.ToString();
+        }
 
+        private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
+        {
+            ExcelApp.Quit();
+        }
+
+        private void RichTextBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
             ExelParser exel = new ExelParser(ObjWorkSheet);
             Apriory a = new Apriory();
 
             exel.parse();
 
-            a.processTransaction(0.5, 0.3, ExelParser.itemsArray, ExelParser.apriorySets);
+            double conf = Double.Parse(textBox1.Text);
+            double supp = Double.Parse(textBox2.Text);
+
+            //0.5 0.3
+            Output result = a.processTransaction(supp, conf, ExelParser.itemsArray, ExelParser.apriorySets);
+
             richTextBox1.Text = exel.getTransactionsForPrint();
-           
+
+            richTextBox3.Text = Output.printFrequentItems(result.FrequentItems);
+
+            richTextBox4.Text = Output.printRules(result.StrongRules);
+
             System.Windows.Forms.Application.DoEvents();
 
-            ExcelApp.Quit();
-        }
-
-        private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
-        {
             ExcelApp.Quit();
         }
     }

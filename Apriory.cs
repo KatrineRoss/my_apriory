@@ -35,7 +35,8 @@ namespace MyApriory
 
             return new Output
             {
-
+                StrongRules = strongRules,
+                FrequentItems = allFrequentItems
             };
         }
 
